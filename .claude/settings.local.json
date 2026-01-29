@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(dir \"d:\\\\React\\\\link-padel-roulette-3\\\\node_modules\\\\react-spin-prize\\\\dist\")",
-      "Bash(npm install:*)",
-      "Bash(npx patch-package:*)"
-    ]
-  }
-}
