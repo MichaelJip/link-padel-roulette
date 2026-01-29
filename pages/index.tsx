@@ -1,78 +1,627 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { SpinnerWheel } from "react-spin-prize";
+import { useState, useRef, useEffect } from "react";
+import * as XLSX from "xlsx";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// 3 consistent rotating colors
+const WHEEL_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+interface WheelItem {
+  id: number;
+  label: string;
+  color: string;
+  ticketCode?: string;
+}
+
+const initialItems: WheelItem[] = [
+  { id: 1, label: "Prize 1", color: "#FF6B6B" },
+  { id: 2, label: "Prize 2", color: "#4ECDC4" },
+  { id: 3, label: "Prize 3", color: "#45B7D1" },
+  { id: 4, label: "Prize 4", color: "#FF6B6B" },
+];
 
 export default function Home() {
+  const [items, setItems] = useState<WheelItem[]>(initialItems);
+  const [winner, setWinner] = useState<WheelItem | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [spinTrigger, setSpinTrigger] = useState(0);
+  const [wheelSize, setWheelSize] = useState(700);
+  const spinSoundRef = useRef<HTMLAudioElement | null>(null);
+  const winSoundRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Responsive wheel size
+  useEffect(() => {
+    const updateWheelSize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const minDimension = Math.min(width, height);
+      // Leave space for buttons and padding
+      const size = Math.min(700, minDimension - 120);
+      setWheelSize(Math.max(280, size));
+    };
+
+    updateWheelSize();
+    window.addEventListener("resize", updateWheelSize);
+    return () => window.removeEventListener("resize", updateWheelSize);
+  }, []);
+
+  // Timer states
+  const [showTimerModal, setShowTimerModal] = useState(false);
+  const [timerHours, setTimerHours] = useState(0);
+  const [timerMinutes, setTimerMinutes] = useState(0);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [isCountingDown, setIsCountingDown] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (isCountingDown && remainingSeconds > 0) {
+      timerRef.current = setTimeout(() => {
+        setRemainingSeconds((prev) => prev - 1);
+      }, 1000);
+    } else if (isCountingDown && remainingSeconds === 0) {
+      setIsCountingDown(false);
+      setIsRevealing(true);
+      // Hide reveal animation after it completes
+      setTimeout(() => setIsRevealing(false), 1500);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isCountingDown, remainingSeconds]);
+
+  const startTimer = () => {
+    const totalSeconds = timerHours * 3600 + timerMinutes * 60 + timerSeconds;
+    if (totalSeconds <= 0) {
+      alert("Please set a valid time!");
+      return;
+    }
+    setRemainingSeconds(totalSeconds);
+    setIsCountingDown(true);
+    setShowTimerModal(false);
+  };
+
+  const cancelTimer = () => {
+    setIsCountingDown(false);
+    setRemainingSeconds(0);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) {
+      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    }
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const data = event.target?.result;
+      const workbook = XLSX.read(data, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+        header: 1,
+      });
+
+      const startRow = rows[0]?.[0]?.toLowerCase().includes("name") ? 1 : 0;
+
+      const newItems: WheelItem[] = rows
+        .slice(startRow)
+        .filter((row) => row[0])
+        .map((row, index) => ({
+          id: Date.now() + index,
+          label: String(row[0]).trim(),
+          ticketCode: row[1] ? String(row[1]).trim() : undefined,
+          color: WHEEL_COLORS[index % WHEEL_COLORS.length],
+        }));
+
+      if (newItems.length >= 2) {
+        setItems(newItems);
+      } else {
+        alert("Excel must have at least 2 items!");
+      }
+    };
+    reader.readAsBinaryString(file);
+
+    // Reset input so same file can be imported again
+    e.target.value = "";
+  };
+
+  // Volume: 0 = muted, 1 = full volume (adjust as needed)
+  const SPIN_VOLUME = 0.3;
+  const WIN_VOLUME = 0.5;
+
+  const playSpinSound = () => {
+    if (spinSoundRef.current) {
+      spinSoundRef.current.volume = SPIN_VOLUME;
+      spinSoundRef.current.currentTime = 0;
+      spinSoundRef.current.play();
+    }
+  };
+
+  const stopSpinSound = () => {
+    if (spinSoundRef.current) {
+      spinSoundRef.current.pause();
+      spinSoundRef.current.currentTime = 0;
+    }
+  };
+
+  const playWinSound = () => {
+    if (winSoundRef.current) {
+      winSoundRef.current.volume = WIN_VOLUME;
+      winSoundRef.current.currentTime = 0;
+      winSoundRef.current.play();
+    }
+  };
+
+  const handleButtonClick = () => {
+    playSpinSound();
+    setSpinTrigger((prev) => prev + 1);
+  };
+
+  const handleSpinComplete = (item: any) => {
+    stopSpinSound();
+    playWinSound();
+    setWinner(item);
+    setShowModal(true);
+  };
+
+  const deleteItem = (id: number) => {
+    if (items.length <= 2) {
+      alert("You need at least 2 items on the wheel!");
+      return;
+    }
+    setItems(items.filter((item) => item.id !== id));
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setWinner(null);
+  };
+
+  const deleteWinnerAndClose = () => {
+    if (winner) {
+      deleteItem(winner.id);
+    }
+    closeModal();
+  };
+
   return (
     <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+        position: "relative",
+      }}
     >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+      <audio ref={spinSoundRef} src="/sounds/spin.mp3" />
+      <audio ref={winSoundRef} src="/sounds/win.mp3" />
+
+      {/* Buttons - Bottom Left */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          zIndex: 100,
+        }}
+      >
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          ref={fileInputRef}
+          onChange={handleImportExcel}
+          style={{ display: "none" }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            padding: "10px 20px",
+            fontSize: "14px",
+            backgroundColor: "#6C5CE7",
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Import from Excel
+        </button>
+        <button
+          onClick={() => setShowTimerModal(true)}
+          style={{
+            padding: "10px 20px",
+            fontSize: "14px",
+            backgroundColor: "#00B894",
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Set Timer
+        </button>
+      </div>
+
+      <SpinnerWheel
+        items={items}
+        onSpinComplete={handleSpinComplete}
+        onButtonClick={handleButtonClick}
+        autoSpinTrigger={spinTrigger}
+        size={wheelSize}
+        duration={5000}
+      />
+
+      {/* Item list with delete buttons */}
+      {/* <div style={{ marginTop: "20px" }}>
+        <h3>Items on wheel:</h3>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {items.map((item) => (
+            <li
+              key={item.id}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                margin: "5px 10px",
+                padding: "8px 12px",
+                backgroundColor: item.color,
+                borderRadius: "20px",
+                color: "#fff",
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              {item.label}
+              <button
+                onClick={() => deleteItem(item.id)}
+                style={{
+                  marginLeft: "10px",
+                  background: "rgba(0,0,0,0.3)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "24px",
+                  height: "24px",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div> */}
+
+      {/* Winner Modal */}
+      {showModal && winner && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+            boxSizing: "border-box",
+          }}
+          onClick={closeModal}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "clamp(20px, 5vw, 40px)",
+              borderRadius: "20px",
+              textAlign: "center",
+              maxWidth: "400px",
+              width: "100%",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+              boxSizing: "border-box",
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <h2 style={{ margin: "0 0 10px", color: "#333", fontSize: "clamp(20px, 5vw, 28px)" }}>🎉 Winner!</h2>
+            <p
+              style={{
+                fontSize: "clamp(20px, 5vw, 28px)",
+                fontWeight: "bold",
+                color: winner.color,
+                margin: "20px 0",
+                wordBreak: "break-word",
+              }}
+            >
+              {winner.label}
+            </p>
+            <div
+              style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}
+            >
+              <button
+                onClick={closeModal}
+                style={{
+                  padding: "12px 20px",
+                  fontSize: "14px",
+                  backgroundColor: "#4ECDC4",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={deleteWinnerAndClose}
+                style={{
+                  padding: "12px 20px",
+                  fontSize: "14px",
+                  backgroundColor: "#FF6B6B",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                Remove from wheel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Timer Input Panel - Slide from Left */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: showTimerModal ? 0 : "-100%",
+          width: "min(350px, 100vw)",
+          height: "100vh",
+          backgroundColor: "#1a1a2e",
+          padding: "40px 20px",
+          boxShadow: showTimerModal ? "5px 0 30px rgba(0,0,0,0.5)" : "none",
+          transition: "left 0.4s ease-in-out",
+          zIndex: 1000,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          boxSizing: "border-box",
+        }}
+      >
+        <h2 style={{ margin: "0 0 30px", color: "#fff", textAlign: "center", fontSize: "clamp(20px, 5vw, 28px)" }}>Set Timer</h2>
+        <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "30px", flexWrap: "wrap" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Hours</label>
+            <input
+              type="number"
+              min="0"
+              max="23"
+              value={timerHours}
+              onChange={(e) => setTimerHours(Math.max(0, parseInt(e.target.value) || 0))}
+              style={{
+                width: "60px",
+                padding: "12px",
+                fontSize: "20px",
+                textAlign: "center",
+                border: "none",
+                borderRadius: "10px",
+                backgroundColor: "#2d2d44",
+                color: "#fff",
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Minutes</label>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={timerMinutes}
+              onChange={(e) => setTimerMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+              style={{
+                width: "60px",
+                padding: "12px",
+                fontSize: "20px",
+                textAlign: "center",
+                border: "none",
+                borderRadius: "10px",
+                backgroundColor: "#2d2d44",
+                color: "#fff",
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Seconds</label>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={timerSeconds}
+              onChange={(e) => setTimerSeconds(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+              style={{
+                width: "60px",
+                padding: "12px",
+                fontSize: "20px",
+                textAlign: "center",
+                border: "none",
+                borderRadius: "10px",
+                backgroundColor: "#2d2d44",
+                color: "#fff",
+              }}
+            />
+          </div>
         </div>
-      </main>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <button
+            onClick={startTimer}
+            style={{
+              padding: "15px 24px",
+              fontSize: "16px",
+              backgroundColor: "#00B894",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            Start Timer
+          </button>
+          <button
+            onClick={() => setShowTimerModal(false)}
+            style={{
+              padding: "15px 24px",
+              fontSize: "14px",
+              backgroundColor: "transparent",
+              color: "#aaa",
+              border: "2px solid #444",
+              borderRadius: "10px",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+      {/* Overlay when timer panel is open */}
+      {showTimerModal && (
+        <div
+          onClick={() => setShowTimerModal(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 999,
+            transition: "opacity 0.3s ease",
+          }}
+        />
+      )}
+
+      {/* Fullscreen Countdown */}
+      {isCountingDown && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#1a1a2e",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <p
+            style={{
+              fontSize: "clamp(80px, 20vw, 200px)",
+              fontWeight: "bold",
+              color: "#fff",
+              margin: 0,
+              fontFamily: "monospace",
+              textShadow: "0 0 30px rgba(255,255,255,0.3)",
+            }}
+          >
+            {formatTime(remainingSeconds)}
+          </p>
+          <button
+            onClick={cancelTimer}
+            style={{
+              marginTop: "40px",
+              padding: "15px 40px",
+              fontSize: "18px",
+              backgroundColor: "#E74C3C",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Reveal Animation */}
+      {isRevealing && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 3000,
+            pointerEvents: "none",
+            overflow: "hidden",
+          }}
+        >
+          {/* Left curtain */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "50%",
+              height: "100%",
+              backgroundColor: "#1a1a2e",
+              animation: "slideLeft 1.2s ease-in-out forwards",
+            }}
+          />
+          {/* Right curtain */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "50%",
+              height: "100%",
+              backgroundColor: "#1a1a2e",
+              animation: "slideRight 1.2s ease-in-out forwards",
+            }}
+          />
+          <style jsx>{`
+            @keyframes slideLeft {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-100%); }
+            }
+            @keyframes slideRight {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 }
