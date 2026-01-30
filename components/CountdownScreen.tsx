@@ -42,7 +42,10 @@ export default function CountdownScreen({
           position: "absolute",
           top: "-50px",
           left: "-320px",
-          animation: "popIn 0.5s ease-out 0.2s both",
+          animation: `
+            popIn 0.5s ease-out 0.2s both,
+            floatUpDown 2.5s ease-in-out 0.7s infinite
+          `,
         }}
       >
         <img
@@ -111,7 +114,8 @@ export default function CountdownScreen({
           right: "0%",
           top: "0%",
           transform: "translateY(-50%)",
-          animation: "popIn 0.5s ease-out 0.8s both",
+          animation:
+            "popIn 0.5s ease-out 0.8s both, floatUpDown 3s ease-in-out 0.7s infinite",
         }}
       >
         <img
@@ -130,9 +134,10 @@ export default function CountdownScreen({
         style={{
           position: "absolute",
           left: "-50px",
-          top: "63%",
+          top: "35%",
           transform: "translateY(-50%)",
-          animation: "slideInLeft 0.5s ease-out 0.6s both",
+          animation:
+            "slideInLeft 0.5s ease-out 0.6s both,floatUpDown 2s ease-in-out 0.7s infinite",
         }}
       >
         <img
@@ -305,6 +310,17 @@ export default function CountdownScreen({
           }
           50% {
             transform: translateY(-50%) translateY(-20px);
+          }
+        }
+        @keyframes floatUpDown {
+          0% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-15px);
+          }
+          100% {
+            transform: translateY(0);
           }
         }
         @keyframes pulse {
