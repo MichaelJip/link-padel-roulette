@@ -63,48 +63,24 @@ export default function CountdownScreen({
       <div
         style={{
           position: "absolute",
-          top: "40px",
-          right: "40px",
+          top: "-60px",
+          right: "-60px",
           display: "flex",
           alignItems: "center",
           gap: "20px",
+          zIndex: '10',
           animation: "popIn 0.5s ease-out 0.4s both",
         }}
       >
-        <div
+        <img
+          src={"./assets/live.png"}
+          alt="Box"
           style={{
-            backgroundColor: "#fff",
-            color: "#E74C3C",
-            padding: "8px 16px",
-            borderRadius: "5px",
-            fontWeight: "bold",
-            fontSize: "clamp(14px, 2vw, 20px)",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
+            height: "auto",
+            maxWidth: "500px",
+            objectFit: "contain",
           }}
-        >
-          <span
-            style={{
-              width: "10px",
-              height: "10px",
-              backgroundColor: "#E74C3C",
-              borderRadius: "50%",
-              animation: "pulse 1s ease-in-out infinite",
-            }}
-          />
-          LIVE
-        </div>
-        {/* Logo placeholder - replace with your image */}
-        <div
-          style={{
-            color: "#000",
-            fontWeight: "bold",
-            fontSize: "clamp(20px, 3vw, 32px)",
-          }}
-        >
-          LINK PADEL
-        </div>
+        />
       </div>
 
       {/* Center Right - Padel racket image placeholder */}
@@ -152,7 +128,7 @@ export default function CountdownScreen({
       </div>
 
       {/* Total Voucher count */}
-      <div
+      {/* <div
         style={{
           position: "absolute",
           left: "50%",
@@ -180,13 +156,13 @@ export default function CountdownScreen({
         >
           TOTAL VOUCHER
         </div>
-      </div>
+      </div> */}
 
       {/* Timer display */}
       <div
         style={{
           position: "absolute",
-          left: "40px",
+          left: "10px",
           bottom: "40px",
           animation: "popIn 0.5s ease-out 0.3s both",
         }}
@@ -223,7 +199,7 @@ export default function CountdownScreen({
         onClick={onCancel}
         style={{
           position: "absolute",
-          bottom: "70px",
+          top: "20px",
           left: "20px",
           width: "40px",
           height: "40px",
@@ -246,7 +222,7 @@ export default function CountdownScreen({
       </button>
 
       {/* Sponsor bar placeholder */}
-      <div
+      {/* <div
         style={{
           position: "absolute",
           bottom: 0,
@@ -261,12 +237,35 @@ export default function CountdownScreen({
           animation: "slideUp 0.5s ease-out 1.5s both",
         }}
       >
-        <span style={{ color: "#666", fontSize: "14px" }}>Sponsored by</span>
-        {/* Replace with sponsor logos */}
-        <span style={{ color: "#fff", fontWeight: "bold" }}>BRI</span>
-        <span style={{ color: "#fff", fontWeight: "bold" }}>CRYSTALIN</span>
-        <span style={{ color: "#fff", fontWeight: "bold" }}>POCARI</span>
-        <span style={{ color: "#fff", fontWeight: "bold" }}>KRISBOW</span>
+        <img
+          src={"./assets/footer.png"}
+          alt="footer"
+          style={{
+            height: "auto",
+            maxWidth: "900px",
+            objectFit: "contain",
+          }}
+        />
+      </div> */}
+
+      <div
+        style={{
+          position: "absolute",
+          left: "-50px",
+          bottom: "-62%",
+          transform: "translateY(-50%)",
+          animation: "slideInLeft 0.5s ease-out 0.6s both",
+        }}
+      >
+        <img
+          src={"./assets/footer.png"}
+          alt="bagi"
+          style={{
+            height: "auto",
+            maxWidth: "1990px",
+            objectFit: "contain",
+          }}
+        />
       </div>
 
       <style jsx>{`

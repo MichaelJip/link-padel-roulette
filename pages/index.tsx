@@ -10,7 +10,7 @@ import {
 } from "@/lib/supabase/lottery";
 import CountdownScreen from "@/components/CountdownScreen";
 
-const WHEEL_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
+const WHEEL_COLORS = ["#ccf137", "#b94220", "#ffff"];
 
 interface WheelItem {
   id: number;
@@ -238,6 +238,7 @@ export default function Home() {
         justifyContent: "center",
         padding: "20px",
         position: "relative",
+        background: "#ccf137",
       }}
     >
       <audio ref={spinSoundRef} src="/sounds/spin.mp3" />
@@ -389,7 +390,7 @@ export default function Home() {
           />
           <div
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: "#b94220",
               padding: "clamp(20px, 5vw, 40px)",
               borderRadius: "20px",
               textAlign: "center",
@@ -400,25 +401,12 @@ export default function Home() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#333",
-                fontSize: "clamp(20px, 5vw, 28px)",
-              }}
-            >
-              🎉 Winner!
-            </h2>
-            <p
-              style={{
-                fontSize: "clamp(20px, 5vw, 28px)",
-                fontWeight: "bold",
-                color: winner.color,
-                margin: "20px 0",
-                wordBreak: "break-word",
-              }}
-            >
-              {winner.label}
+            <h2 className="text-5xl uppercase text-white font-bold">Selamat</h2>
+            <p className="text-xl uppercase text-white font-normal">Kepada:</p>
+            <p className="text-2xl uppercase text-white my-4 font-bold">{winner.label}</p>
+            <div className="h-0.5 bg-white" />
+            <p className="text-2xl uppercase font-light text-white my-4">
+              No Kode: {winner.ticketCode}
             </p>
             <div
               style={{
@@ -680,7 +668,7 @@ export default function Home() {
               left: 0,
               width: "50%",
               height: "100%",
-              backgroundColor: "#1a1a2e",
+              backgroundColor: "#ccf137",
               animation: "slideLeft 1.2s ease-in-out forwards",
             }}
           />
@@ -692,7 +680,7 @@ export default function Home() {
               right: 0,
               width: "50%",
               height: "100%",
-              backgroundColor: "#1a1a2e",
+              backgroundColor: "#ccf137",
               animation: "slideRight 1.2s ease-in-out forwards",
             }}
           />
