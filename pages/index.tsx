@@ -2,8 +2,13 @@ import { SpinnerWheel } from "react-spin-prize";
 import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import Confetti from "react-confetti";
+import {
+  fetchLotteryItems,
+  insertLotteryItems,
+  deleteLotteryItem,
+  LotteryItem,
+} from "@/lib/supabase/lottery";
 
-// 3 consistent rotating colors
 const WHEEL_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
 
 interface WheelItem {
@@ -20,8 +25,18 @@ const initialItems: WheelItem[] = [
   { id: 4, label: "Prize 4", color: "#FF6B6B" },
 ];
 
+function mapLotteryToWheelItems(lotteryItems: LotteryItem[]): WheelItem[] {
+  return lotteryItems.map((item, index) => ({
+    id: item.id,
+    label: item.name,
+    color: WHEEL_COLORS[index % WHEEL_COLORS.length],
+    ticketCode: item.code || undefined,
+  }));
+}
+
 export default function Home() {
-  const [items, setItems] = useState<WheelItem[]>(initialItems);
+  const [items, setItems] = useState<WheelItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [winner, setWinner] = useState<WheelItem | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [spinTrigger, setSpinTrigger] = useState(0);
@@ -30,13 +45,25 @@ export default function Home() {
   const winSoundRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Responsive wheel size
+  useEffect(() => {
+    async function loadItems() {
+      setIsLoading(true);
+      const lotteryItems = await fetchLotteryItems();
+      if (lotteryItems.length >= 2) {
+        setItems(mapLotteryToWheelItems(lotteryItems));
+      } else {
+        setItems(initialItems);
+      }
+      setIsLoading(false);
+    }
+    loadItems();
+  }, []);
+
   useEffect(() => {
     const updateWheelSize = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
       const minDimension = Math.min(width, height);
-      // Leave space for buttons and padding
       const size = Math.min(700, minDimension - 120);
       setWheelSize(Math.max(280, size));
     };
@@ -105,12 +132,12 @@ export default function Home() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const data = event.target?.result;
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
@@ -121,18 +148,22 @@ export default function Home() {
 
       const startRow = rows[0]?.[0]?.toLowerCase().includes("name") ? 1 : 0;
 
-      const newItems: WheelItem[] = rows
+      const parsedItems = rows
         .slice(startRow)
         .filter((row) => row[0])
-        .map((row, index) => ({
-          id: Date.now() + index,
-          label: String(row[0]).trim(),
-          ticketCode: row[1] ? String(row[1]).trim() : undefined,
-          color: WHEEL_COLORS[index % WHEEL_COLORS.length],
+        .map((row) => ({
+          name: String(row[0]).trim(),
+          code: row[1] ? String(row[1]).trim() : undefined,
         }));
 
-      if (newItems.length >= 2) {
-        setItems(newItems);
+      if (parsedItems.length >= 2) {
+        // Save to Supabase and get back items with IDs
+        const savedItems = await insertLotteryItems(parsedItems);
+        if (savedItems.length > 0) {
+          setItems(mapLotteryToWheelItems(savedItems));
+        } else {
+          alert("Failed to save items to database!");
+        }
       } else {
         alert("Excel must have at least 2 items!");
       }
@@ -182,12 +213,17 @@ export default function Home() {
     setShowModal(true);
   };
 
-  const deleteItem = (id: number) => {
+  const deleteItem = async (id: number) => {
     if (items.length <= 2) {
       alert("You need at least 2 items on the wheel!");
       return;
     }
-    setItems(items.filter((item) => item.id !== id));
+    const success = await deleteLotteryItem(id);
+    if (success) {
+      setItems(items.filter((item) => item.id !== id));
+    } else {
+      alert("Failed to delete item from database!");
+    }
   };
 
   const closeModal = () => {
@@ -195,9 +231,9 @@ export default function Home() {
     setWinner(null);
   };
 
-  const deleteWinnerAndClose = () => {
+  const deleteWinnerAndClose = async () => {
     if (winner) {
-      deleteItem(winner.id);
+      await deleteItem(winner.id);
     }
     closeModal();
   };
@@ -215,6 +251,26 @@ export default function Home() {
     >
       <audio ref={spinSoundRef} src="/sounds/spin.mp3" />
       <audio ref={winSoundRef} src="/sounds/win.mp3" />
+
+      {/* Loading State */}
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <p style={{ color: "#fff", fontSize: "24px" }}>Loading...</p>
+        </div>
+      )}
 
       {/* Buttons - Bottom Left */}
       <div
@@ -353,7 +409,15 @@ export default function Home() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ margin: "0 0 10px", color: "#333", fontSize: "clamp(20px, 5vw, 28px)" }}>🎉 Winner!</h2>
+            <h2
+              style={{
+                margin: "0 0 10px",
+                color: "#333",
+                fontSize: "clamp(20px, 5vw, 28px)",
+              }}
+            >
+              🎉 Winner!
+            </h2>
             <p
               style={{
                 fontSize: "clamp(20px, 5vw, 28px)",
@@ -366,7 +430,12 @@ export default function Home() {
               {winner.label}
             </p>
             <div
-              style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
             >
               <button
                 onClick={closeModal}
@@ -420,16 +489,45 @@ export default function Home() {
           boxSizing: "border-box",
         }}
       >
-        <h2 style={{ margin: "0 0 30px", color: "#fff", textAlign: "center", fontSize: "clamp(20px, 5vw, 28px)" }}>Set Timer</h2>
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "30px", flexWrap: "wrap" }}>
+        <h2
+          style={{
+            margin: "0 0 30px",
+            color: "#fff",
+            textAlign: "center",
+            fontSize: "clamp(20px, 5vw, 28px)",
+          }}
+        >
+          Set Timer
+        </h2>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            justifyContent: "center",
+            marginBottom: "30px",
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Hours</label>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#aaa",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+            >
+              Hours
+            </label>
             <input
               type="number"
               min="0"
               max="23"
               value={timerHours}
-              onChange={(e) => setTimerHours(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) =>
+                setTimerHours(Math.max(0, parseInt(e.target.value) || 0))
+              }
               style={{
                 width: "60px",
                 padding: "12px",
@@ -443,13 +541,27 @@ export default function Home() {
             />
           </div>
           <div>
-            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Minutes</label>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#aaa",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+            >
+              Minutes
+            </label>
             <input
               type="number"
               min="0"
               max="59"
               value={timerMinutes}
-              onChange={(e) => setTimerMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+              onChange={(e) =>
+                setTimerMinutes(
+                  Math.max(0, Math.min(59, parseInt(e.target.value) || 0)),
+                )
+              }
               style={{
                 width: "60px",
                 padding: "12px",
@@ -463,13 +575,27 @@ export default function Home() {
             />
           </div>
           <div>
-            <label style={{ display: "block", marginBottom: "8px", color: "#aaa", textAlign: "center", fontSize: "14px" }}>Seconds</label>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#aaa",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+            >
+              Seconds
+            </label>
             <input
               type="number"
               min="0"
               max="59"
               value={timerSeconds}
-              onChange={(e) => setTimerSeconds(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+              onChange={(e) =>
+                setTimerSeconds(
+                  Math.max(0, Math.min(59, parseInt(e.target.value) || 0)),
+                )
+              }
               style={{
                 width: "60px",
                 padding: "12px",
@@ -619,12 +745,20 @@ export default function Home() {
           />
           <style jsx>{`
             @keyframes slideLeft {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-100%); }
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-100%);
+              }
             }
             @keyframes slideRight {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(100%); }
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(100%);
+              }
             }
           `}</style>
         </div>
