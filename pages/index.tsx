@@ -1,6 +1,7 @@
 import { SpinnerWheel } from "react-spin-prize";
 import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
+import Confetti from "react-confetti";
 
 // 3 consistent rotating colors
 const WHEEL_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
@@ -333,6 +334,12 @@ export default function Home() {
           }}
           onClick={closeModal}
         >
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+            recycle={false}
+            numberOfPieces={300}
+          />
           <div
             style={{
               backgroundColor: "#fff",
