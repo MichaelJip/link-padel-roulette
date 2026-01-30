@@ -8,6 +8,7 @@ import {
   deleteLotteryItem,
   LotteryItem,
 } from "@/lib/supabase/lottery";
+import CountdownScreen from "@/components/CountdownScreen";
 
 const WHEEL_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
 
@@ -120,16 +121,6 @@ export default function Home() {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) {
-      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    }
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -478,7 +469,7 @@ export default function Home() {
           left: showTimerModal ? 0 : "-100%",
           width: "min(350px, 100vw)",
           height: "100vh",
-          backgroundColor: "#1a1a2e",
+          backgroundColor: "#ccf137",
           padding: "40px 20px",
           boxShadow: showTimerModal ? "5px 0 30px rgba(0,0,0,0.5)" : "none",
           transition: "left 0.4s ease-in-out",
@@ -513,7 +504,7 @@ export default function Home() {
               style={{
                 display: "block",
                 marginBottom: "8px",
-                color: "#aaa",
+                color: "#000",
                 textAlign: "center",
                 fontSize: "14px",
               }}
@@ -545,7 +536,7 @@ export default function Home() {
               style={{
                 display: "block",
                 marginBottom: "8px",
-                color: "#aaa",
+                color: "#000",
                 textAlign: "center",
                 fontSize: "14px",
               }}
@@ -579,7 +570,7 @@ export default function Home() {
               style={{
                 display: "block",
                 marginBottom: "8px",
-                color: "#aaa",
+                color: "#000",
                 textAlign: "center",
                 fontSize: "14px",
               }}
@@ -630,8 +621,8 @@ export default function Home() {
             style={{
               padding: "15px 24px",
               fontSize: "14px",
-              backgroundColor: "transparent",
-              color: "#aaa",
+              backgroundColor: "black",
+              color: "#fff",
               border: "2px solid #444",
               borderRadius: "10px",
               cursor: "pointer",
@@ -660,49 +651,11 @@ export default function Home() {
 
       {/* Fullscreen Countdown */}
       {isCountingDown && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "#1a1a2e",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 2000,
-          }}
-        >
-          <p
-            style={{
-              fontSize: "clamp(80px, 20vw, 200px)",
-              fontWeight: "bold",
-              color: "#fff",
-              margin: 0,
-              fontFamily: "monospace",
-              textShadow: "0 0 30px rgba(255,255,255,0.3)",
-            }}
-          >
-            {formatTime(remainingSeconds)}
-          </p>
-          <button
-            onClick={cancelTimer}
-            style={{
-              marginTop: "40px",
-              padding: "15px 40px",
-              fontSize: "18px",
-              backgroundColor: "#E74C3C",
-              color: "#fff",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
-        </div>
+        <CountdownScreen
+          remainingSeconds={remainingSeconds}
+          totalItems={items.length}
+          onCancel={cancelTimer}
+        />
       )}
 
       {/* Reveal Animation */}
