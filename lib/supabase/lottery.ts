@@ -56,3 +56,15 @@ export async function deleteLotteryItem(id: number): Promise<boolean> {
 
   return true;
 }
+
+export async function deleteAllLotteryItems(): Promise<boolean> {
+  const supabase = createClient();
+  const { error } = await supabase.from("lottery").delete().neq("id", 0);
+
+  if (error) {
+    console.error("Error deleting all lottery items:", error);
+    return false;
+  }
+
+  return true;
+}

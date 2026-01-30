@@ -6,6 +6,7 @@ import {
   fetchLotteryItems,
   insertLotteryItems,
   deleteLotteryItem,
+  deleteAllLotteryItems,
   LotteryItem,
 } from "@/lib/supabase/lottery";
 import CountdownScreen from "@/components/CountdownScreen";
@@ -128,42 +129,65 @@ export default function Home() {
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = async (event) => {
       const data = event.target?.result;
+      if (!data) return;
+
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+
+      const rows = XLSX.utils.sheet_to_json<any[]>(sheet, {
         header: 1,
+        defval: "",
       });
 
-      const startRow = rows[0]?.[0]?.toLowerCase().includes("name") ? 1 : 0;
+      // ✅ STRONG header detection
+      const firstRow = rows[0]?.map((v: string) =>
+        String(v).toLowerCase().trim(),
+      );
 
-      const parsedItems = rows
-        .slice(startRow)
-        .filter((row) => row[0])
-        .map((row) => ({
-          name: String(row[0]).trim(),
-          code: row[1] ? String(row[1]).trim() : undefined,
-        }));
+      const hasHeader =
+        firstRow?.includes("name") && firstRow?.includes("code");
 
-      if (parsedItems.length >= 2) {
-        // Save to Supabase and get back items with IDs
-        const savedItems = await insertLotteryItems(parsedItems);
-        if (savedItems.length > 0) {
-          setItems(mapLotteryToWheelItems(savedItems));
-        } else {
-          alert("Failed to save items to database!");
-        }
-      } else {
+      const dataRows = hasHeader ? rows.slice(1) : rows;
+
+      const parsedItems = dataRows
+        .map((row) => {
+          const colA = String(row[0] ?? "").trim();
+          const colB = String(row[1] ?? "").trim();
+
+          if (!colA) return null;
+
+          return {
+            name: normalize(colA),
+            code: colB || undefined,
+          };
+        })
+        .filter(Boolean) as { name: string; code?: string }[];
+
+      if (parsedItems.length < 2) {
         alert("Excel must have at least 2 items!");
+        return;
+      }
+
+      const savedItems = await insertLotteryItems(parsedItems);
+
+      if (savedItems.length > 0) {
+        setItems(mapLotteryToWheelItems(savedItems));
+      } else {
+        alert("Failed to save items to database!");
       }
     };
-    reader.readAsBinaryString(file);
 
-    // Reset input so same file can be imported again
+    reader.readAsBinaryString(file);
     e.target.value = "";
   };
+
+  function normalize(text: string) {
+    return text.replace(/\s+/g, " ").trim();
+  }
 
   // Volume: 0 = muted, 1 = full volume (adjust as needed)
   const SPIN_VOLUME = 0.3;
@@ -227,6 +251,21 @@ export default function Home() {
       await deleteItem(winner.id);
     }
     closeModal();
+  };
+
+  const handleDeleteAll = async () => {
+    if (items.length === 0) {
+      alert("No items to delete!");
+      return;
+    }
+    if (confirm("Are you sure you want to delete all items?")) {
+      const success = await deleteAllLotteryItems();
+      if (success) {
+        setItems([]);
+      } else {
+        alert("Failed to delete items from database!");
+      }
+    }
   };
 
   return (
@@ -297,6 +336,21 @@ export default function Home() {
           }}
         >
           Import from Excel
+        </button>
+        <button
+          onClick={handleDeleteAll}
+          style={{
+            padding: "10px 20px",
+            fontSize: "14px",
+            backgroundColor: "#D63031",
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Delete All
         </button>
         <button
           onClick={() => setShowTimerModal(true)}
@@ -403,7 +457,9 @@ export default function Home() {
           >
             <h2 className="text-5xl uppercase text-white font-bold">Selamat</h2>
             <p className="text-xl uppercase text-white font-normal">Kepada:</p>
-            <p className="text-2xl uppercase text-white my-4 font-bold">{winner.label}</p>
+            <p className="text-2xl uppercase text-white my-4 font-bold">
+              {winner.label}
+            </p>
             <div className="h-0.5 bg-white" />
             <p className="text-2xl uppercase font-light text-white my-4">
               No Kode: {winner.ticketCode}
