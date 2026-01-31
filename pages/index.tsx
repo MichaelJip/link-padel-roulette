@@ -428,10 +428,11 @@ export default function Home() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.7)",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.7)",
             zIndex: 1000,
             padding: "20px",
             boxSizing: "border-box",
@@ -443,66 +444,92 @@ export default function Home() {
             recycle={false}
             numberOfPieces={300}
           />
+          {/* Modal Card */}
           <div
             style={{
               backgroundColor: "#b94220",
-              padding: "clamp(20px, 5vw, 40px)",
-              borderRadius: "20px",
+              padding: "clamp(40px, 6vw, 60px) clamp(30px, 5vw, 50px)",
+              borderRadius: "30px",
               textAlign: "center",
-              maxWidth: "400px",
-              width: "100%",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+              maxWidth: "500px",
+              width: "90%",
               boxSizing: "border-box",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-5xl uppercase text-white font-bold">Selamat</h2>
-            <p className="text-xl uppercase text-white font-normal">Kepada:</p>
-            <p className="text-2xl uppercase text-white my-4 font-bold">
-              {winner.label}
-            </p>
-            <div className="h-0.5 bg-white" />
-            <p className="text-2xl uppercase font-light text-white my-4">
-              No Kode: {winner.ticketCode}
-            </p>
-            <div
+            <h2
               style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: "center",
-                flexWrap: "wrap",
+                fontSize: "clamp(2.5rem, 8vw, 4rem)",
+                fontWeight: "bold",
+                color: "#fff",
+                textTransform: "uppercase",
+                margin: "0 0 10px 0",
+                fontStyle: "italic",
               }}
             >
-              {/* <button
-                onClick={closeModal}
-                style={{
-                  padding: "12px 20px",
-                  fontSize: "14px",
-                  backgroundColor: "#4ECDC4",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                }}
-              >
-                Close
-              </button> */}
-              <button
-                onClick={deleteWinnerAndClose}
-                style={{
-                  padding: "12px 20px",
-                  fontSize: "14px",
-                  backgroundColor: "#FF6B6B",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                }}
-              >
-                Remove from wheel
-              </button>
-            </div>
+              Selamat
+            </h2>
+            <p
+              style={{
+                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                color: "#fff",
+                textTransform: "uppercase",
+                margin: "0 0 30px 0",
+              }}
+            >
+              Kepada:
+            </p>
+            <p
+              style={{
+                fontSize: "clamp(1.5rem, 5vw, 2rem)",
+                fontWeight: "bold",
+                color: "#fff",
+                textTransform: "uppercase",
+                margin: "0 0 20px 0",
+              }}
+            >
+              {winner.label}
+            </p>
+            {/* White line separator */}
+            <div
+              style={{
+                height: "2px",
+                backgroundColor: "#fff",
+                margin: "0 auto 20px",
+                width: "80%",
+              }}
+            />
+            <p
+              style={{
+                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                fontWeight: "300",
+                color: "#fff",
+                textTransform: "uppercase",
+                margin: "0",
+              }}
+            >
+              No Kode: {winner.ticketCode}
+            </p>
           </div>
+
+          {/* Next Button - Outside the card */}
+          <button
+            onClick={deleteWinnerAndClose}
+            style={{
+              marginTop: "30px",
+              padding: "15px 50px",
+              fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+              fontWeight: "bold",
+              backgroundColor: "#000",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              textTransform: "uppercase",
+            }}
+          >
+            Next
+          </button>
         </div>
       )}
 
