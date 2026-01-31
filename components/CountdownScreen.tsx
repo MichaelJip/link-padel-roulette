@@ -40,7 +40,7 @@ export default function CountdownScreen({
       {/* Center Right - Padel racket image placeholder */}
       <div className="box-image">
         <img
-          src={"./assets/Box.png"}
+          src={"./assets/BoxNew.png"}
           alt="Box"
         />
       </div>
@@ -161,7 +161,7 @@ export default function CountdownScreen({
           left: -2vw;
           top: 35%;
           transform: translateY(-50%);
-          animation: slideInLeft 0.5s ease-out 0.6s both,
+          animation: popIn 0.5s ease-out 0.2s both,
             floatUpDown 2s ease-in-out 0.7s infinite;
         }
         .bagi-image img {
