@@ -17,14 +17,15 @@ interface WheelItem {
   id: number;
   label: string;
   color: string;
+  textColor?: string;
   ticketCode?: string;
 }
 
 const initialItems: WheelItem[] = [
-  { id: 1, label: "Prize 1", color: "#FF6B6B" },
-  { id: 2, label: "Prize 2", color: "#4ECDC4" },
-  { id: 3, label: "Prize 3", color: "#45B7D1" },
-  { id: 4, label: "Prize 4", color: "#FF6B6B" },
+  { id: 1, label: "Prize 1", color: "#ccf137", textColor: "#000" },
+  { id: 2, label: "Prize 2", color: "#b94220", textColor: "#000" },
+  { id: 3, label: "Prize 3", color: "#ffff", textColor: "#000" },
+  { id: 4, label: "Prize 4", color: "#ccf137", textColor: "#000" },
 ];
 
 function mapLotteryToWheelItems(lotteryItems: LotteryItem[]): WheelItem[] {
@@ -32,6 +33,7 @@ function mapLotteryToWheelItems(lotteryItems: LotteryItem[]): WheelItem[] {
     id: item.id,
     label: item.name,
     color: WHEEL_COLORS[index % WHEEL_COLORS.length],
+    textColor: "#000",
     ticketCode: item.code || undefined,
   }));
 }
@@ -434,7 +436,6 @@ export default function Home() {
             padding: "20px",
             boxSizing: "border-box",
           }}
-          onClick={closeModal}
         >
           <Confetti
             width={window.innerWidth}
@@ -472,7 +473,7 @@ export default function Home() {
                 flexWrap: "wrap",
               }}
             >
-              <button
+              {/* <button
                 onClick={closeModal}
                 style={{
                   padding: "12px 20px",
@@ -485,7 +486,7 @@ export default function Home() {
                 }}
               >
                 Close
-              </button>
+              </button> */}
               <button
                 onClick={deleteWinnerAndClose}
                 style={{
