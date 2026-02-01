@@ -1,5 +1,5 @@
-import { SpinnerWheel } from "react-spin-prize";
 import { useState, useRef, useEffect } from "react";
+import CanvasSpinnerWheel from "@/components/CanvasSpinnerWheel";
 import * as XLSX from "xlsx";
 import Confetti from "react-confetti";
 import {
@@ -65,7 +65,7 @@ export default function Home() {
 
   useEffect(() => {
     const updateWheelSize = () => {
-      const width = window.innerWidth;
+      const width = window.innerWidth - 280; // Account for sidebar
       const height = window.innerHeight;
       const minDimension = Math.min(width, height);
       const size = Math.min(700, minDimension - 120);
@@ -86,6 +86,7 @@ export default function Home() {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [isRevealing, setIsRevealing] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Timer countdown effect
   useEffect(() => {
@@ -278,6 +279,7 @@ export default function Home() {
         alignItems: "center",
         justifyContent: "center",
         padding: "20px",
+        paddingRight: "300px", // Account for sidebar
         position: "relative",
         background: "#ccf137",
       }}
@@ -371,7 +373,7 @@ export default function Home() {
         </button>
       </div>
 
-      <SpinnerWheel
+      <CanvasSpinnerWheel
         items={items}
         onSpinComplete={handleSpinComplete}
         onButtonClick={handleButtonClick}
@@ -379,6 +381,151 @@ export default function Home() {
         size={wheelSize}
         duration={5000}
       />
+
+      {/* Participants Sidebar - Right */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          width: "280px",
+          height: "100vh",
+          backgroundColor: "#1a1a2e",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 100,
+          boxShadow: "-5px 0 20px rgba(0,0,0,0.3)",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            padding: "20px",
+            borderBottom: "1px solid #333",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 5px 0",
+              color: "#fff",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+          >
+            Participants
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              color: "#ccf137",
+              fontSize: "14px",
+              fontWeight: "bold",
+            }}
+          >
+            Total: {items.length}
+          </p>
+        </div>
+
+        {/* Search Box */}
+        <div style={{ padding: "15px 20px" }}>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 15px",
+              fontSize: "14px",
+              border: "none",
+              borderRadius: "8px",
+              backgroundColor: "#2d2d44",
+              color: "#fff",
+              boxSizing: "border-box",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        {/* List */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "0 10px 20px 10px",
+          }}
+        >
+          {items
+            .filter((item) =>
+              item.label.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item, index) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  marginBottom: "6px",
+                  backgroundColor: "#2d2d44",
+                  borderRadius: "8px",
+                  borderLeft: `4px solid ${item.color}`,
+                }}
+              >
+                <span
+                  style={{
+                    color: "#888",
+                    fontSize: "12px",
+                    marginRight: "10px",
+                    minWidth: "30px",
+                  }}
+                >
+                  #{index + 1}
+                </span>
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#fff",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {item.label}
+                  </p>
+                  {item.ticketCode && (
+                    <p
+                      style={{
+                        margin: "2px 0 0 0",
+                        color: "#888",
+                        fontSize: "11px",
+                      }}
+                    >
+                      {item.ticketCode}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          {items.filter((item) =>
+            item.label.toLowerCase().includes(searchQuery.toLowerCase())
+          ).length === 0 && (
+            <p
+              style={{
+                color: "#666",
+                textAlign: "center",
+                padding: "20px",
+                fontSize: "14px",
+              }}
+            >
+              {searchQuery ? "No results found" : "No participants yet"}
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Item list with delete buttons */}
       {/* <div style={{ marginTop: "20px" }}>
