@@ -18,3 +18,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.megaphone-img {
+  position: absolute;
+  top: -80px;
+  left: -120px;
+  width: 280px;
+  height: auto;
+  transform: rotate(0deg);
+  z-index: 2;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .megaphone-img {
+    top: -60px;
+    left: -80px;
+    width: 200px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .megaphone-img {
+    top: -50px;
+    left: -60px;
+    width: 150px;
+  }
+}

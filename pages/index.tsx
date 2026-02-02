@@ -457,7 +457,7 @@ export default function Home() {
         >
           {items
             .filter((item) =>
-              item.label.toLowerCase().includes(searchQuery.toLowerCase())
+              item.label.toLowerCase().includes(searchQuery.toLowerCase()),
             )
             .map((item, index) => (
               <div
@@ -511,7 +511,7 @@ export default function Home() {
               </div>
             ))}
           {items.filter((item) =>
-            item.label.toLowerCase().includes(searchQuery.toLowerCase())
+            item.label.toLowerCase().includes(searchQuery.toLowerCase()),
           ).length === 0 && (
             <p
               style={{
@@ -583,6 +583,7 @@ export default function Home() {
             zIndex: 1000,
             padding: "20px",
             boxSizing: "border-box",
+            overflow: "visible",
           }}
         >
           <Confetti
@@ -591,72 +592,94 @@ export default function Home() {
             recycle={false}
             numberOfPieces={300}
           />
-          {/* Modal Card */}
+          {/* Modal Card with Megaphone */}
           <div
             style={{
-              backgroundColor: "#b94220",
-              padding: "clamp(40px, 6vw, 60px) clamp(30px, 5vw, 50px)",
-              borderRadius: "30px",
-              textAlign: "center",
+              // position: "relative",
               maxWidth: "500px",
               width: "90%",
-              boxSizing: "border-box",
+              overflow: "visible",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <h2
+            <img
+              src="/assets/mega.png"
+              alt="Megaphone"
               style={{
-                fontSize: "clamp(2.5rem, 8vw, 4rem)",
-                fontWeight: "bold",
-                color: "#fff",
-                textTransform: "uppercase",
-                margin: "0 0 10px 0",
-                fontStyle: "italic",
-              }}
-            >
-              Selamat
-            </h2>
-            <p
-              style={{
-                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
-                color: "#fff",
-                textTransform: "uppercase",
-                margin: "0 0 30px 0",
-              }}
-            >
-              Kepada:
-            </p>
-            <p
-              style={{
-                fontSize: "clamp(1.5rem, 5vw, 2rem)",
-                fontWeight: "bold",
-                color: "#fff",
-                textTransform: "uppercase",
-                margin: "0 0 20px 0",
-              }}
-            >
-              {winner.label}
-            </p>
-            {/* White line separator */}
-            <div
-              style={{
-                height: "2px",
-                backgroundColor: "#fff",
-                margin: "0 auto 20px",
-                width: "80%",
+                position: "absolute",
+                top: "5%",
+                left: "23%",
+                width: "40%",
+                height: "auto",
+                transform: "rotate(0deg)",
+                zIndex: 2,
               }}
             />
-            <p
+            <div
               style={{
-                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
-                fontWeight: "300",
-                color: "#fff",
-                textTransform: "uppercase",
-                margin: "0",
+                backgroundColor: "#b94220",
+                padding: "clamp(40px, 6vw, 60px) clamp(30px, 5vw, 50px)",
+                borderRadius: "30px",
+                textAlign: "center",
+                boxSizing: "border-box",
+                position: "relative",
               }}
+              onClick={(e) => e.stopPropagation()}
             >
-              No Kode: {winner.ticketCode}
-            </p>
+              <h2
+                style={{
+                  fontSize: "clamp(2.5rem, 8vw, 4rem)",
+                  fontWeight: "bold",
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  margin: "0 0 10px 0",
+                  fontStyle: "italic",
+                  zIndex: 10
+                }}
+              >
+                Selamat
+              </h2>
+              <p
+                style={{
+                  fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  margin: "0 0 30px 0",
+                }}
+              >
+                Kepada:
+              </p>
+              <p
+                style={{
+                  fontSize: "clamp(1.5rem, 5vw, 2rem)",
+                  fontWeight: "bold",
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  margin: "0 0 20px 0",
+                }}
+              >
+                {winner.label}
+              </p>
+              {/* White line separator */}
+              <div
+                style={{
+                  height: "2px",
+                  backgroundColor: "#fff",
+                  margin: "0 auto 20px",
+                  width: "80%",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                  fontWeight: "300",
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  margin: "0",
+                }}
+              >
+                No Kode: {winner.ticketCode}
+              </p>
+            </div>
           </div>
 
           {/* Next Button - Outside the card */}
