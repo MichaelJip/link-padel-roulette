@@ -592,93 +592,66 @@ export default function Home() {
             recycle={false}
             numberOfPieces={300}
           />
-          {/* Modal Card with Megaphone */}
+          {/* Modal Card with Background Image */}
           <div
             style={{
-              // position: "relative",
-              maxWidth: "500px",
-              width: "90%",
-              overflow: "visible",
+              position: "relative",
+              maxWidth: "min(800px, 85vw)",
+              width: "100%",
+              aspectRatio: "1.4 / 1",
             }}
           >
             <img
-              src="/assets/mega.png"
-              alt="Megaphone"
+              src="/assets/pop.png"
+              alt="Winner announcement"
               style={{
-                position: "absolute",
-                top: window.innerWidth <= 1024 ? "3%" : "5%",
-                left: window.innerWidth <= 1024 ? "15%" : "23%",
-                width: window.innerWidth <= 1024 ? "35%" : "40%",
-                height: "auto",
-                transform: "rotate(0deg)",
-                zIndex: 2,
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
               }}
             />
+            {/* Text overlay positioned in the white box area below the line */}
             <div
               style={{
-                backgroundColor: "#b94220",
-                padding: "clamp(40px, 6vw, 60px) clamp(30px, 5vw, 50px)",
-                borderRadius: "30px",
+                position: "absolute",
+                top: "75%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "55%",
                 textAlign: "center",
-                boxSizing: "border-box",
-                position: "relative",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2
+              <p
                 style={{
-                  fontSize: "clamp(2.5rem, 8vw, 4rem)",
+                  fontSize: "clamp(1.8rem, 3.5vw, 3rem)",
                   fontWeight: "bold",
                   color: "#fff",
                   textTransform: "uppercase",
-                  margin: "0 0 10px 0",
-                  fontStyle: "italic",
-                  zIndex: 10
-                }}
-              >
-                Selamat
-              </h2>
-              <p
-                style={{
-                  fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
-                  color: "#fff",
-                  textTransform: "uppercase",
-                  margin: "0 0 30px 0",
-                }}
-              >
-                Kepada:
-              </p>
-              <p
-                style={{
-                  fontSize: "clamp(1.5rem, 5vw, 2rem)",
-                  fontWeight: "bold",
-                  color: "#fff",
-                  textTransform: "uppercase",
-                  margin: "0 0 20px 0",
+                  margin: "0 0 clamp(8px, 1.5vw, 15px) 0",
+                  wordBreak: "break-word",
+                  lineHeight: "1.1",
                 }}
               >
                 {winner.label}
               </p>
-              {/* White line separator */}
-              <div
-                style={{
-                  height: "2px",
-                  backgroundColor: "#fff",
-                  margin: "0 auto 20px",
-                  width: "80%",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
-                  fontWeight: "300",
-                  color: "#fff",
-                  textTransform: "uppercase",
-                  margin: "0",
-                }}
-              >
-                No Kode: {winner.ticketCode}
-              </p>
+
+              {/* Ticket code */}
+              {winner.ticketCode && (
+                <p
+                  style={{
+                    fontSize: "clamp(1.1rem, 2vw, 1.6rem)",
+                    fontWeight: "500",
+                    color: "#fff",
+                    textTransform: "uppercase",
+                    margin: "0",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  {winner.ticketCode}
+                </p>
+              )}
             </div>
           </div>
 
