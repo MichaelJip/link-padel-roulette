@@ -207,20 +207,20 @@ export default function CountdownScreen({
         }
         .timer-label {
           color: #000;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           font-weight: bold;
-          font-size: clamp(1rem, 2vw, 1.875rem);
+          font-size: clamp(0.875rem, 1.5vw, 1.25rem);
         }
         .timer-display {
           background-color: #000;
           color: #fff;
-          padding: clamp(8px, 1.5vw, 15px) clamp(15px, 2.5vw, 25px);
-          font-size: clamp(1.5rem, 4vw, 4rem);
+          padding: clamp(6px, 1vw, 12px) clamp(12px, 2vw, 20px);
+          font-size: clamp(1.25rem, 3vw, 2.5rem);
           font-weight: bold;
           font-family: monospace;
-          border-radius: 10px;
+          border-radius: 8px;
           animation: timerPulse 1s ease-in-out infinite;
-          min-width: clamp(150px, 20vw, 280px);
+          min-width: clamp(120px, 15vw, 200px);
           text-align: center;
         }
 
