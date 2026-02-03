@@ -596,7 +596,7 @@ export default function Home() {
           <div
             style={{
               position: "relative",
-              maxWidth: "min(800px, 85vw)",
+              maxWidth: "min(600px, 65vw)",
               width: "100%",
               aspectRatio: "1.4 / 1",
             }}
@@ -615,7 +615,7 @@ export default function Home() {
             <div
               style={{
                 position: "absolute",
-                top: "75%",
+                top: "76%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 width: "55%",
@@ -625,7 +625,7 @@ export default function Home() {
             >
               <p
                 style={{
-                  fontSize: "clamp(1.8rem, 3.5vw, 3rem)",
+                  fontSize: "clamp(1.8rem, 3.5vw, 2.2rem)",
                   fontWeight: "bold",
                   color: "#fff",
                   textTransform: "uppercase",
