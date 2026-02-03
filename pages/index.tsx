@@ -606,9 +606,9 @@ export default function Home() {
               alt="Megaphone"
               style={{
                 position: "absolute",
-                top: "5%",
-                left: "23%",
-                width: "40%",
+                top: window.innerWidth <= 1024 ? "3%" : "5%",
+                left: window.innerWidth <= 1024 ? "15%" : "23%",
+                width: window.innerWidth <= 1024 ? "35%" : "40%",
                 height: "auto",
                 transform: "rotate(0deg)",
                 zIndex: 2,
