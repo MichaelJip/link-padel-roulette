@@ -609,7 +609,13 @@ export default function Home() {
                 height: "100%",
                 objectFit: "contain",
                 display: "block",
+                WebkitUserSelect: "none",
+                userSelect: "none",
+                pointerEvents: "none",
+                WebkitTouchCallout: "none",
               }}
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
             />
             {/* Text overlay positioned in the white box area below the line */}
             <div
