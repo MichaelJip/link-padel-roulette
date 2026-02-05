@@ -24,7 +24,7 @@ export default function CountdownScreen({
       {/* Top Left - RAFFLE TIME banner */}
       <div className="raffle-banner">
         <img
-          src={"./assets/raffe.png"}
+          src={"./assets/raffe.webp"}
           alt="raffle_time"
         />
       </div>
@@ -32,7 +32,7 @@ export default function CountdownScreen({
       {/* Top Right - LIVE badge & Logo placeholder */}
       <div className="live-badge">
         <img
-          src={"./assets/live.png"}
+          src={"./assets/live.webp"}
           alt="Live"
         />
       </div>
@@ -40,7 +40,7 @@ export default function CountdownScreen({
       {/* Center Right - Padel racket image placeholder */}
       <div className="box-image">
         <img
-          src={"./assets/BoxNew.png"}
+          src={"./assets/BoxNew.webp"}
           alt="Box"
         />
       </div>
@@ -48,7 +48,7 @@ export default function CountdownScreen({
       {/* Left side - Prize info */}
       <div className="bagi-image">
         <img
-          src={"./assets/bagi.png"}
+          src={"./assets/bagi.webp"}
           alt="bagi"
         />
       </div>
@@ -82,7 +82,7 @@ export default function CountdownScreen({
       {/* Bottom sponsor bar */}
       <div className="sponsor-bar">
         <img
-          src={"./assets/bar.png"}
+          src={"./assets/bar.webp"}
           alt="bar"
         />
       </div>

@@ -602,7 +602,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/assets/pop.png"
+              src="/assets/pop.webp"
               alt="Winner announcement"
               style={{
                 width: "100%",
@@ -625,7 +625,7 @@ export default function Home() {
             >
               <p
                 style={{
-                  fontSize: "clamp(1.8rem, 3.5vw, 2.2rem)",
+                  fontSize: "clamp(1.5rem, 3.5vw, 1.5rem)",
                   fontWeight: "bold",
                   color: "#fff",
                   textTransform: "uppercase",
